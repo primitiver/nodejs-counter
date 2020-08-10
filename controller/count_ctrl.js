@@ -17,7 +17,7 @@ class CountCtrl {
     try {
       let params={type}
       if(platform) params.platform=platform
-
+console.log(params)
       let list = await paging(Counts, params, {}, parseInt(limit), page);
       let count = await Counts.find(params).countDocuments();
       // let list = await find(Counts, { type });
