@@ -1,3 +1,4 @@
+var request = require("request");
 module.exports = {
   hans_query(query, req) {
     for (let item in query) {
@@ -10,4 +11,9 @@ module.exports = {
       }
     }
   },
+  http(data){
+    return new Promise(resove=>{
+      request(data,res=>resove(res),err=>resove(err))
+    })
+  }
 };
