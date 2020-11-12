@@ -1,6 +1,7 @@
 var express = require("express");
 var count_ctrl = require("../controller/count_ctrl");
 var images_ctrl = require("../controller/images_ctrl");
+var gitlab_ctrl = require("../controller/gitlab");
 // var {upload_app,get_app_info} = require("../controller/upload_app")
 
 var { success, error } = require("../controller/response");
@@ -45,7 +46,7 @@ router.post("/git-push-data", async function (req, res, next) {
   console.log(req.query);
   console.log(req.body);
   let { name, git_http_url } = req.body.project;
-  let { object_kind, ref, user_name, message, commits = [{}] } = req.body;
+  let { object_kind, ref, user_name,project_id, message, commits = [{}] } = req.body;
   if (object_kind == "push") {
     let url = `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${req.query.key}`;
     let msg=''
@@ -80,16 +81,27 @@ router.post("/git-push-data", async function (req, res, next) {
     if(ref.includes("release")){
       var refs = ref.replace("refs/tags/", "");
       var versionObj = {
-        "release_app_download": "release-app-download-5a5365e6a70e972bc3e3",
-        "release_html-consumer": "release-consumer-6905a230a5755bf30419",
-        "release_dealer": "release-dealer-2b840b6288701d2fa223",
-        "release_derucci_app_h5": "release-derucci-app-h5-a3d0b156cfe4ebfb176d",
-        "release_marketing_h5": "release-marketing-h5-1fb285f7912677780c17",
-        "release_television": "release-television-fb18609cbcb15c7b414f",
+        "84": "release-app-download-5a5365e6a70e972bc3e3",
+        "53": "release-consumer-6905a230a5755bf30419",
+        "97": "release-dealer-2b840b6288701d2fa223",
+        "39": "release-derucci-app-h5-a3d0b156cfe4ebfb176d",
+        "1": "release-marketing-h5-1fb285f7912677780c17",
+        "54": "release-television-fb18609cbcb15c7b414f",
+        "92":"release_admin-consumer-ccee37d33ba536ae55e0"
       };
-      var temp = refs.split("_v")[0];
+      let list_res=await gitlab_ctrl.get_gitlab_list({})
+      let token=''
+      let gitlab= list_res.data.list.filter(item=>item.gitlab_id==project_id)[0]
+      console.log(gitlab)
+      if(gitlab){
+          token=gitlab.release_version
+      }else{
+        token=versionObj[project_id]
+      }
+      console.log(token)
+      // var temp = refs.split("_v")[0];
       let params={
-                  url: "http://47.98.152.82:8088/generic-webhook-trigger/invoke" + "?token=" + versionObj[temp],
+                  url: "http://47.98.152.82:8088/generic-webhook-trigger/invoke" + "?token=" + token,
                   method: "post", 
                   headers: { "content-type": "application/json", }, 
                   body: JSON.stringify({ ref: refs, versionname: user_name })
@@ -155,5 +167,23 @@ router.get("/get-app-info", async function (req, res, next) {
   let data = await get_app_info(req.query);
   res.json(data);
 });
+
+
+router.get('/get-gitlab-list',async (req,res)=>{
+  let list_res=await gitlab_ctrl.get_gitlab_list({})
+  res.send(list_res)
+})
+
+router.get('/save-gitlab-list',async (req,res)=>{
+  let list_res=await gitlab_ctrl.save_gitlab_list(req.query)
+  console.log(list_res)
+  res.send({status:200})
+})
+
+router.get('/del-gitlab-list',async (req,res)=>{
+  let list_res=await gitlab_ctrl.del_gitlab_list({gitlab_id:'92'})
+  console.log(list_res)
+  res.send({status:200})
+})
 
 module.exports = router;

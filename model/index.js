@@ -9,7 +9,7 @@ module.exports = {
     });
   },
   // 删
-  delete(colName, deleteDate, deleteNum) {
+  del(colName, deleteDate, deleteNum) {
     let deleteType = deleteNum === 1 ? "deleteMany" : "deleteOne";
     return new Promise((resolve, reject) => {
       colName[deleteType](deleteDate, (err) => {
