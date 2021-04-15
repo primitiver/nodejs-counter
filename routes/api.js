@@ -46,7 +46,8 @@ router.post("/git-push-data", async function (req, res, next) {
   console.log(req.query);
   console.log(req.body);
   let { name, git_http_url } = req.body.project;
-  let { object_kind, ref, user_name,project_id, message, commits = [{}] } = req.body;
+  let { object_kind, ref, user_name,project_id, message,checkout_sha, commits = [{}] } = req.body;
+  console.log('checkout_sha:'+checkout_sha)
   if (object_kind == "push") {
     let url = `https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${req.query.key}`;
     let msg=''
@@ -125,14 +126,19 @@ router.post("/git-push-data", async function (req, res, next) {
 
 
     
+    if(!checkout_sha){
+      console.log('删除一个tag',user_name)
+       return
+    }
+
     let body = `{ 
       "msgtype": "text",
       "text":{
-        "content": "生产环境更新\n更新时间：立刻更新\n发布人：${user_name}\n ${name}更新：\n${message}\n 版本：${ref.replace(
+        "content": "生产环境更新\n更新时间：立即更新\n发布人：${user_name}\n ${name}更新：\n${message}\n 版本：${ref.replace(
       "refs/tags/",
       ""
     )}",
-        "mentioned_mobile_list":["16603869908","13925519284","13532855589"]
+        "mentioned_mobile_list":["16603869908","15807692963","13532855589"]
       }
     }`;
 
